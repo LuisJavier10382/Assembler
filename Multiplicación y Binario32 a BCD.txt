@@ -15,8 +15,8 @@
 ;   Esta rutina carga el resultado de la multipicacion de 32bit's en los registros	*
 ;   <BCD_val_3, BCD_val_2, BCD_val_1, BCD_val_0>; y carga el resultado de la		*
 ;   conversion en los registros: <BCD_val_3, BCD_val_2, BCD_val_1, BCD_val_0>		*
-;   features of the assembler (Document DS33014).                     			*
-;                                                                     			*
+;   Cada uno de estos registros almacena dos números Binarios codificados en 		*
+;   decimal BCD                                                             		*	
 ; ***************************************************************************************
 ;                                                                     			*
 ;    Filename:	    Multiplicacion y BCD.asm                            		*
@@ -29,11 +29,11 @@
 ;                                                                     			*
 ; ***************************************************************************************
 ;                                                                     			*
-;    Files Required: P16F883.INC                                      			*
-;                                                                    			*	
+;    File Requerido: P16F883.INC                                      			*
+;    Mplab                                                                		*	
 ; ***************************************************************************************
 ;                                                                     			*
-;    Notes:                                                           			*
+;    Notas: Se incluye librería para Pic 16f883                                        	*
 ;                                                                     			*
 ; ***************************************************************************************
 
@@ -103,7 +103,6 @@ Temp		EQU	0X2E
 ;***********************************************************************
 
 		ORG	0x000	     	; Vector Reset
-
 		nop
 	  	goto    main         	; Inicio de Programa
 
@@ -133,7 +132,6 @@ Salir		NOP
 ;***********************************************************************
 
 Multiplicacion
-
 		clrf	Resultado_a
 		clrf	Resultado_b
 		clrf 	Resultado_c
@@ -228,7 +226,6 @@ HexBCD
 		CLRF 	BCD_val_3
 
 		BCF 	STATUS,C
-
 loop16 		RLF 	Byte_0		; Resultado_a  de la Multiplicacion
 		RLF 	Byte_1		; Resultado_b  de la Multiplicacion
 		RLF 	Byte_2		; Resultado_c  de la Multiplicacion
@@ -276,5 +273,5 @@ adjBCD		MOVLW 	d'3'
 
 ;********************************************************************
 
-	END
+		END
 

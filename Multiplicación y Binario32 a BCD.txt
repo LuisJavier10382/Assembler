@@ -1,0 +1,280 @@
+;****************************************************************************************
+;   Este programa tiene como objetivo realizar pruebas de operacion de 			*
+;   dos rutinas, una de multiplicacion y otra de conversion Binaria a BCD.		*
+;   A continuacion describiremos brevemente algunos detalles				*
+;  											*
+; ***************************************************************************************
+;   MULTIPLICACION									*
+;   Este programa almacena dos numeros de 16 bit's, cada uno, y los almacena		*
+;   en los registros: <Factor1b; Factor1a> x <Factor2b; Factor2a>;			*
+;   Para luego multiplicarlos y almacena el resultado en cuatro registros de 8 bit's	*
+;   <Resultado_d; Resultado_c; Resultado_b; Resultado_a>                     		*
+;  											*
+; ***************************************************************************************
+;   BINARIO 32 bit's - BCD								*
+;   Esta rutina carga el resultado de la multipicacion de 32bit's en los registros	*
+;   <BCD_val_3, BCD_val_2, BCD_val_1, BCD_val_0>; y carga el resultado de la		*
+;   conversion en los registros: <BCD_val_3, BCD_val_2, BCD_val_1, BCD_val_0>		*
+;   features of the assembler (Document DS33014).                     			*
+;                                                                     			*
+; ***************************************************************************************
+;                                                                     			*
+;    Filename:	    Multiplicacion y BCD.asm                            		*
+;    Date:                    Enero 7 / 2018                                    	*
+;    File Version:     1.0                                               		*
+;                                                                     			*
+;    Author:               Ing. Luis Javier Romero Anaya				*    
+;    Email:		   lujar54@hotmail.com		                          	*
+;    Company:                                                         			*
+;                                                                     			*
+; ***************************************************************************************
+;                                                                     			*
+;    Files Required: P16F883.INC                                      			*
+;                                                                    			*	
+; ***************************************************************************************
+;                                                                     			*
+;    Notes:                                                           			*
+;                                                                     			*
+; ***************************************************************************************
+
+	list		p=16f883	
+	#include	<p16f883.inc>	
+
+	__CONFIG    _CONFIG1, _LVP_OFF & _FCMEN_ON & _IESO_OFF & _BOR_OFF & _CPD_OFF & _CP_OFF & _MCLRE_ON & _PWRTE_ON & _WDT_OFF & _INTRC_OSC_NOCLKOUT
+	__CONFIG    _CONFIG2, _WRT_OFF & _BOR21V
+
+;**************************************************************************
+;				REGISTROS PARA LA MULTIPLICACION
+;
+;<Factor1b; Factor1a> x <Factor2b; Factor2a> = <Resultado_d; Resultado_c; Resultado_b; Resultado_a>
+;**************************************************************************
+
+;**************************************************************************
+;	Registros  para guardar los valores del Multiplicando(Factor1b, Factor1a)
+;		y Multiplicador(Factor2b, Factor2a)
+;**************************************************************************
+Factor1a		EQU	0X21
+Factor1b		EQU	0X22
+Factor2a		EQU	0X23
+Factor2b		EQU	0X24
+
+;***********************************************************************
+;	Registros para guardar resultado de multiplicacion de 32 bit's
+;		<Resultado_d, Resultado_c, Resultado_b, Resultado_a>
+;***********************************************************************
+Resultado_a	EQU	0X25
+Resultado_b	EQU	0X26
+Resultado_c	EQU	0X27
+Resultado_d	EQU	0X28
+
+;***********************************************************************
+;		registro temporario de multiplicacion
+;***********************************************************************
+Flag 			EQU	0X29
+
+;***********************************************************************
+
+
+;	REGISTROS PARA CONVERSION BIN_32bit's - BCD
+;***********************************************************************
+;	Registros para guardar resultado de la conversion 32 bit's
+;		<BCD_val_3, BCD_val_2, BCD_val_1, BCD_val_0>
+;***********************************************************************
+BCD_val_0	EQU 	0X2A
+BCD_val_1	EQU	0X2B
+BCD_val_2	EQU	0X2C
+BCD_val_3	EQU	0X2D
+
+;***********************************************************************
+;	Registros donde se almacena el valor de 16bit's
+;		<Byte_3, Byte_2, Byte_1, Byte_0>
+;***********************************************************************
+Byte_0		EQU	0X2F
+Byte_1		EQU	0X30
+Byte_2		EQU	0X31
+Byte_3		EQU	0X32
+
+;***********************************************************************
+;		registro temporario de Bin32bit's - BCD
+;***********************************************************************
+MCount		EQU	0X33
+Temp		EQU	0X2E
+
+;***********************************************************************
+
+		ORG	0x000	     	; Vector Reset
+
+		nop
+	  	goto    main         	; Inicio de Programa
+
+;*****************************************************************************************
+;			PROGRAMA PRINCIPAL
+;*****************************************************************************************
+main
+		MOVLW	.255		; cargamos el Multiplicando con el valor 3 FF (.1023)
+		MOVWF	Factor1a			
+		MOVLW	.3
+		MOVWF	Factor1b
+
+		MOVLW	.24		; Cargamos Multiplicador con el valor Hexa 13 18 (.4888)
+		MOVWF	Factor2a			
+		MOVLW	.19		; El resultado sera:  00 4C 4C E8 
+		MOVWF	Factor2b
+
+		CALL 	Multiplicacion
+		NOP
+		CALL	HexBCD		; Se carga los valores del resultado de Multiplicacion (00 4C 4C E8 )
+					; y se convierte a su equivalente BCD (.5 00 04 24)
+Salir		NOP
+		GOTO 	Salir
+
+;***********************************************************************
+;			RUTINA DE MULTIPLICACION
+;***********************************************************************
+
+Multiplicacion
+
+		clrf	Resultado_a
+		clrf	Resultado_b
+		clrf 	Resultado_c
+		clrf 	Resultado_d
+		bsf 	Resultado_a,7
+		clrf 	Flag
+	
+		btfss 	Factor1b,7
+		goto 	mult_1
+		comf 	Factor1b,f
+		comf 	Factor1a,f
+		incf 	Factor1a,f
+		btfsc 	STATUS,Z
+		incf 	Factor1b,f
+		incf 	Flag,f
+mult_1
+		btfss 	Factor2b,7
+		goto 	mult_2
+		comf 	Factor2b,f
+		comf	Factor2a,f
+		incf	Factor2a,f
+		btfsc 	STATUS,Z
+		incf 	Factor2b,f
+		incf 	Flag
+mult_2	
+		rrf 	Factor1b,f
+		rrf 	Factor1a,f
+		btfss 	STATUS,C
+		goto 	mult_3
+		movf 	Factor2a,w
+		addwf 	Resultado_b,f
+		movf 	Factor2b,w
+		btfsc 	STATUS,C
+		incfsz 	Factor2b,w
+		addwf 	Resultado_c,f
+		btfsc 	STATUS,C
+		incf 	Resultado_d,f
+		bcf 	STATUS,C
+mult_3
+		btfss 	Factor1a,7
+		goto 	mult_4
+		movf 	Factor2a,w
+		addwf 	Resultado_c,f
+		btfsc 	STATUS,C
+		incf 	Resultado_d,f
+		movf	Factor2b,w
+		addwf 	Resultado_d,f
+mult_4	
+		rrf 	Resultado_d,f
+		rrf 	Resultado_c,f
+		rrf 	Resultado_b,f
+		rrf 	Resultado_a,f
+		btfss 	STATUS,C
+		goto 	mult_2
+		btfss 	Flag,0
+		RETURN
+
+		comf 	Resultado_d,f
+		comf 	Resultado_c,f
+		comf 	Resultado_b,f
+		comf 	Resultado_a,f
+		incf 	Resultado_a,f
+		btfsc 	STATUS,Z
+		incf 	Resultado_b,f
+		btfsc 	STATUS,Z
+		incf 	Resultado_c,f
+		btfsc 	STATUS,Z
+		incf 	Resultado_d,f
+
+		RETURN
+
+;**********************************************************************
+;	CONVERTIDOR BINARIO16 BIT - BCD (PASA DE BINARIO A DECIMAL)
+;**********************************************************************
+
+HexBCD
+		MOVF	Resultado_a,W
+		MOVWF	Byte_0
+		MOVF	Resultado_b,W
+		MOVWF	Byte_1
+		MOVFW	Resultado_c
+		MOVWF	Byte_2
+		MOVFW	Resultado_d
+		MOVWF	Byte_3
+		
+    		MOVLW 	d'32'			; Contador para el 
+		MOVWF 	MCount		; corrimiento de los 32 BIT
+
+		CLRF 	BCD_val_0
+		CLRF 	BCD_val_1
+		CLRF 	BCD_val_2
+		CLRF 	BCD_val_3
+
+		BCF 	STATUS,C
+
+loop16 		RLF 	Byte_0		; Resultado_a  de la Multiplicacion
+		RLF 	Byte_1		; Resultado_b  de la Multiplicacion
+		RLF 	Byte_2		; Resultado_c  de la Multiplicacion
+		RLF 	Byte_3		; Resultado_d   de la Multiplicacion
+
+		RLF 	BCD_val_0,F
+		RLF 	BCD_val_1,F
+		RLF 	BCD_val_2,F
+		RLF 	BCD_val_3,F
+
+		DECF 	MCount,F
+		BTFSC 	STATUS,Z
+		RETURN
+
+adjDEC  	MOVLW 	BCD_val_0
+		MOVWF 	FSR
+		CALL 	adjBCD
+
+		MOVLW 	BCD_val_1
+		MOVWF 	FSR
+		CALL 	adjBCD
+
+		MOVLW 	BCD_val_2
+		MOVWF 	FSR
+		CALL 	adjBCD
+
+		MOVLW 	BCD_val_3
+		MOVWF 	FSR
+		CALL 	adjBCD
+
+		GOTO 	loop16
+
+adjBCD		MOVLW 	d'3'
+		ADDWF 	INDF,W
+		MOVWF 	Temp
+		BTFSC 	Temp,3
+		MOVWF 	INDF
+		MOVLW 	30h
+		ADDWF 	INDF,W
+		MOVWF 	Temp
+		BTFSC 	Temp,7
+		MOVWF 	INDF
+
+		RETURN
+
+;********************************************************************
+
+	END
+

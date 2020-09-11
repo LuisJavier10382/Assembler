@@ -1,4 +1,4 @@
-;;DIVISION ENTERA DE NZMEROS NATURALES 16bits:16bits
+;;DIVISION ENTERA DE NÚMEROS NATURALES 16bits/16bits
 ;;
 ;;Emplea la instruccion "subwfb", que se encuentra en 
 ;;los Mid-Range 8 bits PICs (49 instrucciones o mas)
@@ -16,60 +16,58 @@
 ;;Entrada: DIVIDENDO (16b) y DIVISOR(16b)
 ;;Salida: COCIENTE(16b) y RESTO(16b)
 ;;Borra DIVIDENDO, no altera DIVISOR
-;;
-;;Esta implementada como una subrutina: DIVIDE
-;;  PICdevJerez - Jerez de la Frontera - Espana
+
 
 ;*********************************************************************
 ;		Palabra de configuracisn de parametros del PIC 16F883
 ;*********************************************************************
 
-	list		p=16f883		; list directive to define processor
-	#include	<p16f883.inc>	; processor specific variable definitions
+	list		p=16f883		; directiva list para definir el tipo de Micro-Controlador
+	#include	<p16f883.inc>		; definición de variables specificas del Micro-Controlador
 
 	__CONFIG    _CONFIG1, _LVP_OFF & _FCMEN_ON & _IESO_OFF & _BOR_OFF & _CPD_OFF & _CP_OFF & _MCLRE_ON & _PWRTE_ON & _WDT_OFF & _INTRC_OSC_NOCLKOUT
 	__CONFIG    _CONFIG2, _WRT_OFF & _BOR21V
 
 ;*********************************************************************
 #ifndef 	Carry
-#define	Carry	STATUS,C
+#define		Carry	STATUS,C
 #endif
 
-#ifndef	lsl16
+#ifndef		lsl16
 lsl16		MACRO	File
 		lslf		File,F
 		rlf		(File+.1),F
 		endM
 #endif
 
-;;****************Estas lineas son un ejemplo ********************
+;;********************************************************************
 ;;**suprimir los punto y coma para su funcionamiento stand-alone**
 ;*********************************************************************
 
-Temporal		equ		.127
+Temporal	equ		.127
 CocienteH	equ		.126
-Cociente		equ		.125
+Cociente	equ		.125
 RestoH		equ		.124
 Resto		equ		.123
 DividendoH	equ		.122
 Dividendo	equ		.121
-DivisorH		equ		.120
+DivisorH	equ		.120
 Divisor		equ		.119
-W_L			equ		.118
+W_L		equ		.118
 
 ;*****************************************************************
 ;DIVIDENDO	equ	.6000	;Constantes usadas como ejemplo
 ;DIVISOR	equ	.14	;
 ;*****************************************************************
 
-;	movlw	HIGH DIVIDENDO
-;	movwf	DividendoH
-;	movlw	LOW DIVIDENDO
-;	movwf	Dividendo
-;	movlw	HIGH DIVISOR
-;	movwf	DivisorH
-;	movlw	LOW DIVISOR
-;	movwf	Divisor
+;	movlw		HIGH DIVIDENDO
+;	movwf		DividendoH
+;	movlw		LOW DIVIDENDO
+;	movwf		Dividendo
+;	movlw		HIGH DIVISOR
+;	movwf		DivisorH
+;	movlw		LOW DIVISOR
+;	movwf		Divisor
 
 ;*****************************************************************
 
@@ -87,17 +85,17 @@ st:
 	lsl16		Dividendo
 	rlf		Resto
 	rlf		(Resto+.1)
-	movf	Divisor,W
-	subwf	Resto,W
-	movwf	W_L
-	movf	DivisorH,W
-	subwfb	RestoH,W
+	movf		Divisor,W
+	subwf		Resto,W
+	movwf		W_L
+	movf		DivisorH,W
+	subwfb		RestoH,W
 	btfss		Carry
 	goto		st
 	bsf		Cociente,0
-	movwf	RestoH
-	movf	W_L,W
-	movwf	Resto
+	movwf		RestoH
+	movf		W_L,W
+	movwf		Resto
 	goto		st
 
 	end

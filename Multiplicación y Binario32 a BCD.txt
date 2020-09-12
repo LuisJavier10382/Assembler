@@ -5,7 +5,7 @@
 ;  											*
 ; ***************************************************************************************
 ;   MULTIPLICACION									*
-;   Este programa almacena dos numeros de 16 bit's, cada uno, y los almacena		*
+;   Esta rutina almacena dos numeros de 16 bit's, cada uno, y los almacena		*
 ;   en los registros: <Factor1b; Factor1a> x <Factor2b; Factor2a>;			*
 ;   Para luego multiplicarlos y almacena el resultado en cuatro registros de 8 bit's	*
 ;   <Resultado_d; Resultado_c; Resultado_b; Resultado_a>                     		*
@@ -19,12 +19,12 @@
 ;   decimal BCD                                                             		*	
 ; ***************************************************************************************
 ;                                                                     			*
-;    Filename:	    Multiplicacion y BCD.asm                            		*
-;    Date:                    Enero 7 / 2018                                    	*
-;    File Version:     1.0                                               		*
+;    Filename:	    Multiplicacion y conversión Bin-BCD.asm                            	*
+;    Date:              Enero 7 / 2018                                    		*
+;    File Version:     	1.0                                               		*
 ;                                                                     			*
-;    Author:               Ing. Luis Javier Romero Anaya				*    
-;    Email:		   lujar54@hotmail.com		                          	*
+;    Author:            Ing. Luis Javier Romero Anaya					*    
+;    Email:		lujar54@hotmail.com		                          	*
 ;    Company:                                                         			*
 ;                                                                     			*
 ; ***************************************************************************************
@@ -73,7 +73,6 @@ Resultado_d	EQU	0X28
 Flag 			EQU	0X29
 
 ;***********************************************************************
-
 
 ;	REGISTROS PARA CONVERSION BIN_32bit's - BCD
 ;***********************************************************************
